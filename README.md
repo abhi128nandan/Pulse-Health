@@ -14,9 +14,6 @@
 Modern web applications depend on dozens of microservices, webhooks, and third-party APIs. When endpoints degrade or fail intermittently, teams often discover outages only after users complain.
 
 **PulseCheck** provides an active API health checking and observability solution. It continuously validates reachability, enforces strict timeout budgets, tracks response latency, and calculates mathematical uptime and latency percentiles over a rolling 24-hour window.
-
-![PulseCheck Dashboard](docs/screenshots/dashboard-overview.png)
-
 ---
 
 ## Features
@@ -32,9 +29,6 @@ Modern web applications depend on dozens of microservices, webhooks, and third-p
 - **Process-Local Execution Guard:** In-memory execution guard prevents overlapping scheduled runs within the same process.
 - **Developer-Focused UI:** Dark neutral technical aesthetic with real-time filtering, master/detail navigation, native cyclic focus trapping, and full responsiveness (1440px desktop down to 320px mobile).
 - **PostgreSQL Persistence:** Atomic check records stored with Drizzle ORM and automatic cascading deletion on endpoint removal.
-
-![Endpoint Detail View](docs/screenshots/endpoint-detail.png)
-
 ---
 
 ## Architecture
