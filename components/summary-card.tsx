@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 
 export interface SummaryCardProps {
@@ -8,6 +10,20 @@ export interface SummaryCardProps {
   isLoading?: boolean;
 }
 
+const VARIANT_COLORS: Record<'neutral' | 'up' | 'degraded' | 'down', string> = {
+  neutral: 'text-zinc-100',
+  up: 'text-emerald-400',
+  degraded: 'text-amber-400',
+  down: 'text-rose-400',
+};
+
+const DOT_COLORS: Record<'neutral' | 'up' | 'degraded' | 'down', string> = {
+  neutral: 'bg-zinc-500',
+  up: 'bg-emerald-500',
+  degraded: 'bg-amber-500',
+  down: 'bg-rose-500',
+};
+
 export function SummaryCard({
   label,
   value,
@@ -16,22 +32,12 @@ export function SummaryCard({
   isLoading = false,
 }: SummaryCardProps) {
   const isUnavailable = value === '--';
-
+  const colorClass = VARIANT_COLORS[variant] ?? VARIANT_COLORS.neutral;
   const valueColor = isUnavailable
     ? 'text-zinc-500 font-mono font-normal'
-    : `${{
-        neutral: 'text-zinc-100',
-        up: 'text-emerald-400',
-        degraded: 'text-amber-400',
-        down: 'text-rose-400',
-      }[variant]} font-semibold`;
+    : `${colorClass} font-semibold`;
 
-  const dotColor = {
-    neutral: 'bg-zinc-500',
-    up: 'bg-emerald-500',
-    degraded: 'bg-amber-500',
-    down: 'bg-rose-500',
-  }[variant];
+  const dotColor = DOT_COLORS[variant] ?? DOT_COLORS.neutral;
 
   return (
     <div className="flex flex-col p-4 rounded-lg bg-[#121215] border border-zinc-800 hover:border-zinc-700/70 transition-colors duration-150">
@@ -54,3 +60,4 @@ export function SummaryCard({
     </div>
   );
 }
+

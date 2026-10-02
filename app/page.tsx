@@ -82,7 +82,7 @@ export default function DashboardPage() {
         if (!res.ok) {
           throw new Error('Failed to load endpoints');
         }
-        const data: Endpoint[] = await res.json();
+        const data: Endpoint[] = await res.json().catch(() => []);
         if (!isCancelled) {
           setEndpoints(
             data.map((endpoint) => ({
@@ -122,7 +122,7 @@ export default function DashboardPage() {
       try {
         const histRes = await fetch(`/api/endpoints/${id}/history?limit=50`);
         if (histRes.ok && !isCancelled) {
-          const histData: Check[] = await histRes.json();
+          const histData: Check[] = await histRes.json().catch(() => []);
           setSelectedHistory(histData);
 
           // Update latest check on endpoint if history exists
@@ -147,13 +147,15 @@ export default function DashboardPage() {
       try {
         const metRes = await fetch(`/api/endpoints/${id}/metrics`);
         if (metRes.ok && !isCancelled) {
-          const metData: EndpointMetrics = await metRes.json();
-          setSelectedMetrics(metData);
-          setEndpoints((prev) =>
-            prev.map((ep) =>
-              ep.id === id ? { ...ep, metrics: metData } : ep
-            )
-          );
+          const metData: EndpointMetrics | null = await metRes.json().catch(() => null);
+          if (metData) {
+            setSelectedMetrics(metData);
+            setEndpoints((prev) =>
+              prev.map((ep) =>
+                ep.id === id ? { ...ep, metrics: metData } : ep
+              )
+            );
+          }
         }
       } catch {
         if (!isCancelled) {
@@ -184,7 +186,7 @@ export default function DashboardPage() {
           method: 'POST',
         });
 
-        const data = await response.json();
+        const data = await response.json().catch(() => ({}));
 
         if (!response.ok) {
           // PulseCheck application error
@@ -226,12 +228,14 @@ export default function DashboardPage() {
 
           // Re-fetch metrics for selected endpoint
           fetch(`/api/endpoints/${id}/metrics`)
-            .then((r) => r.json())
-            .then((met: EndpointMetrics) => {
-              setSelectedMetrics(met);
-              setEndpoints((prev) =>
-                prev.map((ep) => (ep.id === id ? { ...ep, metrics: met } : ep))
-              );
+            .then((r) => (r.ok ? r.json().catch(() => null) : null))
+            .then((met: EndpointMetrics | null) => {
+              if (met) {
+                setSelectedMetrics(met);
+                setEndpoints((prev) =>
+                  prev.map((ep) => (ep.id === id ? { ...ep, metrics: met } : ep))
+                );
+              }
             })
             .catch(() => {});
         }

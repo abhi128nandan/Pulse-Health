@@ -26,8 +26,15 @@ export function EndpointRow({
 
   return (
     <tr
+      tabIndex={0}
       onClick={onSelect}
-      className={`group cursor-pointer border-b border-zinc-800/80 transition-colors duration-150 ${
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onSelect();
+        }
+      }}
+      className={`group cursor-pointer border-b border-zinc-800/80 transition-colors duration-150 focus-visible:outline-none focus-visible:bg-zinc-900/60 focus-visible:ring-1 focus-visible:ring-indigo-500/50 ${
         isSelected
           ? 'bg-zinc-900/90 border-l-2 border-l-indigo-500'
           : 'hover:bg-zinc-900/40 bg-transparent'
@@ -87,9 +94,12 @@ export function EndpointRow({
 
           <button
             type="button"
-            onClick={onDelete}
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete();
+            }}
             aria-label={`Delete ${endpoint.name}`}
-            className="p-1.5 text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-md transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-rose-500"
+            className="p-1.5 text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-md transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-rose-500 cursor-pointer"
             title="Delete endpoint"
           >
             <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

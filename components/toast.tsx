@@ -22,7 +22,7 @@ export function ToastContainer({ toasts, onDismiss }: ToastContainerProps) {
         return (
           <div
             key={toast.id}
-            role="alert"
+            role="status"
             className={`pointer-events-auto flex items-start justify-between gap-3 p-3 rounded-lg border shadow-lg text-xs leading-relaxed transition-all transform translate-y-0 ${
               isError
                 ? 'bg-zinc-900 border-rose-500/40 text-rose-200'

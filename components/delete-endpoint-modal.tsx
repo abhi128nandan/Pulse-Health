@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import type { Endpoint } from '../types/dashboard';
 
 interface DeleteEndpointModalProps {
@@ -21,19 +21,69 @@ export function DeleteEndpointModal({
   const [isDeleting, setIsDeleting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  const modalRef = useRef<HTMLDivElement>(null);
+  const cancelButtonRef = useRef<HTMLButtonElement>(null);
+  const previousActiveElementRef = useRef<HTMLElement | null>(null);
+
   const handleClose = useCallback(() => {
     if (isDeleting) return;
     setIsDeleting(false);
     setErrorMessage(null);
     onClose();
+    if (previousActiveElementRef.current && typeof previousActiveElementRef.current.focus === 'function') {
+      previousActiveElementRef.current.focus();
+    }
   }, [isDeleting, onClose]);
 
+  // Focus cancel button on open and store initiating element
+  useEffect(() => {
+    if (isOpen) {
+      previousActiveElementRef.current = document.activeElement as HTMLElement | null;
+      const timer = setTimeout(() => {
+        cancelButtonRef.current?.focus();
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen]);
+
+  // Handle Escape key to close and cyclic Tab focus trap
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === 'Escape' && isOpen && !isDeleting) {
+      if (!isOpen || isDeleting) return;
+
+      if (e.key === 'Escape') {
+        e.preventDefault();
         handleClose();
+        return;
+      }
+
+      if (e.key === 'Tab' && modalRef.current) {
+        const focusableElements = modalRef.current.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        );
+
+        if (focusableElements.length === 0) {
+          e.preventDefault();
+          return;
+        }
+
+        const firstElement = focusableElements[0];
+        const lastElement = focusableElements[focusableElements.length - 1];
+
+        if (e.shiftKey) {
+          if (document.activeElement === firstElement || !modalRef.current.contains(document.activeElement)) {
+            e.preventDefault();
+            lastElement.focus();
+          }
+        } else {
+          if (document.activeElement === lastElement || !modalRef.current.contains(document.activeElement)) {
+            e.preventDefault();
+            firstElement.focus();
+          }
+        }
       }
     }
+
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, isDeleting, handleClose]);
@@ -76,7 +126,7 @@ export function DeleteEndpointModal({
       aria-labelledby="delete-dialog-title"
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-in fade-in duration-150"
     >
-      <div className="w-full max-w-md rounded-lg bg-[#121215] border border-zinc-700/80 shadow-2xl p-5 text-zinc-100">
+      <div ref={modalRef} className="w-full max-w-md rounded-lg bg-[#121215] border border-zinc-700/80 shadow-2xl p-5 text-zinc-100">
         <div className="flex items-start gap-3">
           <div className="w-9 h-9 rounded-full bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-rose-400 shrink-0 mt-0.5">
             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -106,6 +156,7 @@ export function DeleteEndpointModal({
 
         <div className="flex items-center justify-end gap-2 mt-5 pt-3 border-t border-zinc-800">
           <button
+            ref={cancelButtonRef}
             type="button"
             onClick={handleClose}
             disabled={isDeleting}

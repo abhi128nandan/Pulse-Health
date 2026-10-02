@@ -25,6 +25,7 @@ export function AddEndpointModal({
 
   const nameInputRef = useRef<HTMLInputElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
+  const previousActiveElementRef = useRef<HTMLElement | null>(null);
 
   const handleClose = useCallback(() => {
     if (isSubmitting) return;
@@ -34,11 +35,15 @@ export function AddEndpointModal({
     setFieldErrors({});
     setServerError(null);
     onClose();
+    if (previousActiveElementRef.current && typeof previousActiveElementRef.current.focus === 'function') {
+      previousActiveElementRef.current.focus();
+    }
   }, [isSubmitting, onClose]);
 
-  // Focus name input on open
+  // Focus name input on open and store initiating element
   useEffect(() => {
     if (isOpen) {
+      previousActiveElementRef.current = document.activeElement as HTMLElement | null;
       const timer = setTimeout(() => {
         nameInputRef.current?.focus();
       }, 50);
@@ -46,13 +51,44 @@ export function AddEndpointModal({
     }
   }, [isOpen]);
 
-  // Handle Escape key to close
+  // Handle Escape key to close and cyclic Tab focus trap
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === 'Escape' && isOpen && !isSubmitting) {
+      if (!isOpen || isSubmitting) return;
+
+      if (e.key === 'Escape') {
+        e.preventDefault();
         handleClose();
+        return;
+      }
+
+      if (e.key === 'Tab' && modalRef.current) {
+        const focusableElements = modalRef.current.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        );
+
+        if (focusableElements.length === 0) {
+          e.preventDefault();
+          return;
+        }
+
+        const firstElement = focusableElements[0];
+        const lastElement = focusableElements[focusableElements.length - 1];
+
+        if (e.shiftKey) {
+          if (document.activeElement === firstElement || !modalRef.current.contains(document.activeElement)) {
+            e.preventDefault();
+            lastElement.focus();
+          }
+        } else {
+          if (document.activeElement === lastElement || !modalRef.current.contains(document.activeElement)) {
+            e.preventDefault();
+            firstElement.focus();
+          }
+        }
       }
     }
+
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, isSubmitting, handleClose]);

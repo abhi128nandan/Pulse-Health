@@ -26,8 +26,15 @@ export function EndpointMobileCard({
 
   return (
     <div
+      tabIndex={0}
       onClick={onSelect}
-      className={`flex flex-col p-3.5 rounded-lg border mb-2.5 cursor-pointer transition-colors duration-150 ${
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onSelect();
+        }
+      }}
+      className={`flex flex-col p-3.5 rounded-lg border mb-2.5 cursor-pointer transition-colors duration-150 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-indigo-500 ${
         isSelected
           ? 'bg-zinc-900 border-indigo-500'
           : 'bg-[#121215] border-zinc-800 hover:border-zinc-700'
@@ -48,9 +55,12 @@ export function EndpointMobileCard({
           <CheckButton onCheck={onCheck} isProbing={isProbing} size="sm" />
           <button
             type="button"
-            onClick={onDelete}
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete();
+            }}
             aria-label={`Delete ${endpoint.name}`}
-            className="p-1.5 text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-md transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-rose-500"
+            className="p-1.5 text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-md transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-rose-500 cursor-pointer"
             title="Delete endpoint"
           >
             <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
