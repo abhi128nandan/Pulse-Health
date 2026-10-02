@@ -1,0 +1,18 @@
+name: PulseCheck Scheduled Monitoring
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+jobs:
+  scheduled-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Send Authenticated Cron Request
+        run: |
+          curl -sS -X POST \
+            "${{ vars.PULSECHECK_URL }}/api/cron/check" \
+            -H "Authorization: Bearer ${{ secrets.PULSECHECK_CRON_SECRET }}" \
+            --fail-with-body
